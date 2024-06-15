@@ -69,3 +69,14 @@ python sma5_bot.py
 ## Example Output
 
 The bot will continuously print trading metrics to the console, including trade details, net profit, and the number of trades executed.
+```sh
+-----------------------------
+bought for 66194.24
+sell for 66198.58
+profit: 4.3399999999965075
+-----------------------------
+net profit: 178.7100000000355
+net profit percent: 0.26990751806082175
+no. of trades: 198
+-----------------------------
+```
