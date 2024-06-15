@@ -1,0 +1,52 @@
+import websocket
+import json
+import pandas as pd
+from binance import Client
+
+endpoint = 'wss://stream.binance.com:9443/ws'
+our_msg = json.dumps({'method':'SUBSCRIBE','params':['btcusdt@ticker'],'id':1})
+
+
+df = pd.DataFrame()
+in_position = False
+buy_orders=[]
+sell_orders=[]
+np = 0
+no_trade = 0
+np_per = 0
+
+
+def on_open(ws):
+    ws.send(our_msg)
+
+def on_message(ws,message):
+    global df, in_position, buy_orders, sell_orders, np, no_trade, np_per
+    out = json.loads(message)
+    out = pd.DataFrame({'price':float(out['c'])}, index=[pd.to_datetime(out['E'],unit='ms')])
+    df = pd.concat([df,out],axis=0)
+    #print(df)
+    df = df.tail(5)
+    last_price = df.tail(1).price.values[0]
+    sma_5 = df.price.rolling(5).mean().tail(1).values[0]
+    if not in_position and last_price > sma_5:
+        print('-----------------------------')
+        print('bought for '+ str(last_price))
+        buy_orders.append(last_price)
+        in_position = True
+    if in_position and last_price < sma_5:
+        print('sell for '+ str(last_price))
+        print('profit: '+str(last_price - buy_orders[-1]))
+        print('-----------------------------')
+        no_trade = no_trade + 1
+        np = np +(last_price - buy_orders[-1])
+        np_per = np_per +((last_price - buy_orders[-1])/last_price)*100
+        print('net profit: '+str(np))
+        print('net profit percent: '+str(np_per))
+        print('no. of trades: '+str(no_trade))
+        sell_orders.append(last_price)
+        in_position = False
+
+
+
+ws = websocket.WebSocketApp(endpoint, on_message=on_message,on_open=on_open)
+ws.run_forever()
