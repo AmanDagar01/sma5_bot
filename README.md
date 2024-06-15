@@ -1,6 +1,4 @@
-Here's a customized README file for your GitHub repository, `sma5_bot`:
 
----
 
 # sma5_bot
 
